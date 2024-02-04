@@ -6,6 +6,7 @@
 
 # standard library
 import json
+import os
 from copy import deepcopy
 from datetime import datetime
 from email.utils import formatdate
@@ -270,6 +271,13 @@ class GitRssPlugin(BasePlugin[RssPluginConfig]):
         else:
             page_url_comments = None
 
+        # Hack to fix image links in the feed for my custom needs
+        docs_dir = config.docs_dir
+        relative_src_path = page.file.abs_src_path[len(docs_dir) :]
+        relative_src_path_without_first_level = "/".join(
+            relative_src_path.split("/")[2:]
+        )
+        post_dir_path = os.path.dirname(relative_src_path_without_first_level) + "/"
         # append to list to be filtered later
         self.pages_to_filter.append(
             PageInformation(
@@ -288,7 +296,7 @@ class GitRssPlugin(BasePlugin[RssPluginConfig]):
                 image=self.util.get_image(
                     in_page=page,
                     # below let it as old dict get method to handle custom fallback value
-                    base_url=config.get("site_url", __uri__),
+                    base_url=config.get("site_url", __uri__) + post_dir_path,
                 ),
                 title=page.title,
                 updated=page_dates[1],
